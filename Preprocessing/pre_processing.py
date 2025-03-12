@@ -37,13 +37,13 @@ print("\nFirst 5 Rows:")
 print(df.head())
 
 # Step 1: Handle Missing Values (HbA1c_level)
-df["HbA1c_level"].replace(["???", "Unknown"], np.nan, inplace=True)
+df["HbA1c_level"] = df["HbA1c_level"].replace({"???": np.nan, "Unknown": np.nan})
 df["HbA1c_level"] = df.groupby("diabetes")["HbA1c_level"].transform(lambda x: x.fillna(x.median()))
 
 # Step 2: Encode Categorical Features
 # One-Hot Encoding for Gender and Smoking History
-ohe = OneHotEncoder(drop="first", sparse_output=False)
-encoded_features = ohe.fit_transform(df[["gender", "smoking_history"]])
+ohe = OneHotEncoder(drop="first")
+encoded_features = ohe.fit_transform(df[["gender", "smoking_history"]]).toarray()
 encoded_df = pd.DataFrame(encoded_features, columns=ohe.get_feature_names_out(["gender", "smoking_history"]))
 df = df.drop(columns=["gender", "smoking_history"]).join(encoded_df)
 
@@ -107,8 +107,9 @@ plt.show()
 
 # Display feature importance
 plt.figure(figsize=(10, 5))
-sns.barplot(x=feature_importances[selected_features], y=selected_features, palette="viridis")
+sns.barplot(x=feature_importances[selected_features], y=selected_features, hue=selected_features, dodge=False, palette="viridis")
 plt.xlabel("Feature Importance Score")
 plt.ylabel("Features")
 plt.title("Feature Importance from Random Forest")
+plt.legend().remove()
 plt.show()
